@@ -1,0 +1,151 @@
+{
+ "checks": [
+  {
+   "name": "faceplate solid valid",
+   "pass": true,
+   "detail": "1 solid(s)"
+  },
+  {
+   "name": "faceplate fits 320x320 bed",
+   "pass": true,
+   "detail": "253.0 x 12.6 x 131.8"
+  },
+  {
+   "name": "shelf solid valid",
+   "pass": true,
+   "detail": "1 solid(s)"
+  },
+  {
+   "name": "shelf fits 320x320 bed",
+   "pass": true,
+   "detail": "253.0 x 293.6 x 43.7"
+  },
+  {
+   "name": "faceplate clear of card (+0.5 mm)",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "shelf clear of card (+0.5 mm)",
+   "pass": true,
+   "detail": "overlap 0.00 mm3 (pads: see real-mesh checks)"
+  },
+  {
+   "name": "faceplate clear of 16-pin",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "faceplate clear of PCIe fingers",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "faceplate clear of I/O bracket + flange",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "faceplate leaves HDMI/DP open",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "shelf clear of 16-pin",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "shelf clear of PCIe fingers",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "shelf clear of I/O bracket + flange",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "shelf leaves HDMI/DP open",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "tab screw heads clear of HDMI/DP",
+   "pass": true,
+   "detail": "M3 button heads, -x side of tab"
+  },
+  {
+   "name": "tab screw heads clear of faceplate",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "clear of the 4 Lab Rax posts",
+   "pass": true,
+   "detail": "overlap 0.00 mm3"
+  },
+  {
+   "name": "faceplate clear of REAL card mesh",
+   "pass": true,
+   "detail": "0 of 55 nearby card points inside"
+  },
+  {
+   "name": "shelf clear of REAL card mesh",
+   "pass": true,
+   "detail": "0 of 8681 nearby card points inside"
+  },
+  {
+   "name": "faceplate clear of Ti CAD (STEP)",
+   "pass": true,
+   "detail": "0 of 194 nearby card points inside"
+  },
+  {
+   "name": "shelf clear of Ti CAD (STEP)",
+   "pass": true,
+   "detail": "0 of 19804 nearby card points inside; 11 on contoured pads ignored (STEP shroud bottom is flat)"
+  },
+  {
+   "name": "real card rear stick-out",
+   "pass": true,
+   "detail": "tail at 288 -> 48 mm past frame + plug"
+  },
+  {
+   "name": "stack inside 3U",
+   "pass": true,
+   "detail": "top 132.2 of 133.35"
+  },
+  {
+   "name": "riser bay clear above the floor",
+   "pass": true,
+   "detail": "26 mm wide, nothing in it"
+  },
+  {
+   "name": "riser slot open under the fingers",
+   "pass": true,
+   "detail": "39 x 110 mm, to x -19.5 (PCB edge -21.5)"
+  },
+  {
+   "name": "span deflection < 1 mm (PETG)",
+   "pass": true,
+   "detail": "0.52 mm centre load"
+  },
+  {
+   "name": "rear stick-out (past frame back)",
+   "pass": true,
+   "detail": "card 48 + plug 29 = 76 mm"
+  }
+ ],
+ "rack": {
+  "outside_depth": 240.0,
+  "rear_ear_seat": 234.0,
+  "units": 3
+ },
+ "card": {
+  "L": 287.6072021484375,
+  "W": 127.0,
+  "T": 81.3,
+  "x0": -21.5,
+  "z0": 25.4
+ }
+}

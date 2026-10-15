@@ -1,0 +1,19 @@
+3U GPU SHELF -- rev 3c (2026-10-08)
+File: gpu_shelf.stl (253.0 x 293.6, prints flat as modelled: plate on the bed, pads and ears up)
+
+CHANGES SINCE THE FIRST PRINT
+  - Pads: 6 contoured pads just inside the REAL shroud edges (x -14.2 / 103.7). Each top ramps up
+    the shroud's edge chamfer, then runs flat inward; the locating lip carries the edge height
+    straight out, so pad + lip have one continuous top. Sampled off the detailed Ti mesh,
+    0.2 mm under the shroud. Tops 28-30 mm at the edge.
+  - Riser: no upright riser wall. One 39 x 110 mm floor slot from the riser bay to 2 mm past the
+    card's PCB edge, so the ribbon drops straight through under the PCIe fingers to PCIE1.
+  - Rear ears: now on the OUTER face of the rear posts (y 240), like the faceplate on the front.
+  - Rear stop: removed. Faceplate tab screw + strap hold the card fore-and-aft.
+
+CHECK BEFORE PRINTING
+  The pad contour comes from a GrabCAD FTW3 mesh stretched to Ti thickness, not your card. Put
+  the card on the old shelf and look at the gap under the shroud at each pad position; it should
+  roughly match. If the real shroud is flatter, say so and the pads get scaled down.
+
+PRINT: same profile as the faceplate (PETG PRO, 0.2 mm, 5 walls, 25 % cubic). No supports.

@@ -1,0 +1,184 @@
+{
+ "U_mm": 44.45,
+ "total_U": 17.0,
+ "rack_outside_depth": 240.0,
+ "z_floor_mm": 47.0,
+ "clear_width": 222.0,
+ "post_height_mm": 222.25,
+ "enclosure": {
+  "feet": 4,
+  "bottom_panel": 1,
+  "side_panels": 6,
+  "horizontal_edges": 4,
+  "edges": 4
+ },
+ "modules": [
+  {
+   "key": "empty_lo",
+   "label": "1.5U \u00b7 empty (5 holes)",
+   "U_from_bottom": 0.3571,
+   "U_height": 1.5,
+   "z_mm": [
+    62.9,
+    129.6
+   ],
+   "source": "air",
+   "colour": "#2a3340",
+   "files": []
+  },
+  {
+   "key": "keystone",
+   "label": "0.5U \u00b7 keystone blank (flipped, 6th hole)",
+   "U_from_bottom": 1.7857,
+   "U_height": 0.5,
+   "z_mm": [
+    126.4,
+    148.6
+   ],
+   "source": "real",
+   "colour": "#5f6b7a",
+   "files": [
+    "keystone"
+   ]
+  },
+  {
+   "key": "tpe_shelf",
+   "label": "1U \u00b7 open shelf, tpe_bg_380",
+   "U_from_bottom": 2.3571,
+   "U_height": 1.0,
+   "z_mm": [
+    151.8,
+    196.2
+   ],
+   "source": "real",
+   "colour": "#8a7f6a",
+   "files": [
+    "tpe_shelf"
+   ]
+  },
+  {
+   "key": "gs108t",
+   "label": "1U \u00b7 open shelf, GS108T switch",
+   "U_from_bottom": 3.3571,
+   "U_height": 1.0,
+   "z_mm": [
+    196.2,
+    240.7
+   ],
+   "source": "real",
+   "colour": "#6a8a7f",
+   "files": [
+    "gs108t"
+   ]
+  },
+  {
+   "key": "sbc",
+   "label": "2U \u00b7 SBC holder: 1 empty, 4x Pi 4, 2x Pi 5 (right)",
+   "U_from_bottom": 4.3571,
+   "U_height": 2.0,
+   "z_mm": [
+    240.7,
+    329.6
+   ],
+   "source": "sbc",
+   "colour": "#3fb950",
+   "files": [
+    "sbc_frame",
+    "sbc_holders"
+   ],
+   "slot_pitch_mm": 29.67,
+   "slots": [
+    "empty",
+    "Pi 4",
+    "Pi 4",
+    "Pi 4",
+    "Pi 4",
+    "Pi 5 / Pi 3",
+    "Pi 5 / Pi 3"
+   ],
+   "row_width_mm": 207.7
+  },
+  {
+   "key": "psu_shelf",
+   "label": "1U \u00b7 PETG open shelf carrying the PSU (shares U6)",
+   "U_from_bottom": 6.3571,
+   "U_height": 1.0,
+   "z_mm": [
+    329.6,
+    374.0
+   ],
+   "source": "real",
+   "colour": "#b98cff",
+   "files": [
+    "psu_shelf"
+   ],
+   "rear": true,
+   "shares_U": true
+  },
+  {
+   "key": "pc_psu",
+   "label": "2U \u00b7 ATX PSU mount + ATX PSU (RM1000e size)",
+   "U_from_bottom": 6.3571,
+   "U_height": 2.0,
+   "z_mm": [
+    329.6,
+    418.5
+   ],
+   "source": "real",
+   "colour": "#9b8cff",
+   "files": [
+    "pc_psu",
+    "pc_psu_hw"
+   ],
+   "rear": true
+  },
+  {
+   "key": "itx",
+   "label": "2U \u00b7 mini-ITX shelf + mini-ITX board",
+   "U_from_bottom": 8.3571,
+   "U_height": 2.0,
+   "z_mm": [
+    418.5,
+    507.4
+   ],
+   "source": "real",
+   "colour": "#58a6ff",
+   "files": [
+    "itx",
+    "itx_hw"
+   ]
+  },
+  {
+   "key": "gap",
+   "label": "1U \u00b7 empty",
+   "U_from_bottom": 10.3571,
+   "U_height": 1.0,
+   "z_mm": [
+    507.4,
+    551.8
+   ],
+   "source": "air",
+   "colour": "#2a3340",
+   "files": []
+  },
+  {
+   "key": "gpu",
+   "label": "3U \u00b7 GPU shelf + RTX 3090 Ti FTW3",
+   "U_from_bottom": 11.0,
+   "U_height": 3.0,
+   "z_mm": [
+    536.0,
+    669.3
+   ],
+   "source": "gpu",
+   "colour": "#e58c3c",
+   "files": [
+    "gpu_shelf",
+    "gpu_faceplate",
+    "gpu_card"
+   ]
+  }
+ ],
+ "used_U": 14.0,
+ "free_U": 3.0
+}

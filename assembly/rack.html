@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lab Rax 10" — 17U rack layout</title>
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --line:#30363d; --fg:#c9d1d9;
+          --dim:#8b949e; --accent:#58a6ff; --warn:#f0883e; --ok:#3fb950; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  header { padding:14px 18px 10px; }
+  h1 { margin:0 0 2px; font-size:17px; font-weight:600; }
+  .sub { color:var(--dim); font-size:12.5px; }
+  main { display:flex; gap:14px; padding:4px 18px 18px; align-items:flex-start; }
+  #stage { position:relative; flex:1 1 auto; height:82vh; min-height:520px; background:#10151c;
+        border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  #stage canvas { display:block; }
+  #hint { position:absolute; left:10px; bottom:8px; color:#5b6672; font-size:11.5px; pointer-events:none; }
+  aside { flex:0 0 340px; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:13px 14px; }
+  aside h2 { margin:0 0 9px; font-size:13px; font-weight:600; }
+  label { display:block; font-size:12.5px; margin:3px 0; cursor:pointer; }
+  .sw { display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 6px 0 2px; }
+  .u { color:var(--dim); font-variant-numeric:tabular-nums; }
+  .note { margin-top:11px; padding-top:10px; border-top:1px solid var(--line); color:var(--dim); font-size:12px; }
+  .note b { color:var(--fg); font-weight:600; }
+  .ph { color:var(--warn); }
+  #tools { position:absolute; left:10px; top:10px; display:flex; flex-direction:column; gap:6px; z-index:2; }
+  .row { display:flex; gap:4px; align-items:center; flex-wrap:wrap; background:rgba(13,17,23,.82);
+         border:1px solid var(--line); border-radius:6px; padding:4px 6px; }
+  .row span.t { color:var(--dim); font-size:11.5px; margin-right:2px; }
+  .row button { background:#21262d; border:1px solid var(--line); color:var(--fg); border-radius:4px;
+         padding:2px 8px; font:inherit; font-size:12px; cursor:pointer; }
+  .row button:hover { border-color:var(--accent); }
+  .row button.on { background:#1f3a5f; border-color:var(--accent); color:#fff; }
+  .row input[type=range] { width:190px; accent-color:var(--accent); }
+  #secval { color:var(--dim); font-size:11.5px; font-variant-numeric:tabular-nums; min-width:74px; }
+  #stage.picking canvas { cursor:crosshair; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lab Rax 10" — 17U rack layout</h1>
+  <div class="sub">3 × 5U posts + 2 × 1U extension bands. Posts, extensions and Pi holders are the
+    real printed STLs; modules with no CAD on disk are drawn as outlined boxes at their true U
+    height. Each extension is a full-depth (240 mm) side rail carrying its own three M6 holes on
+    the rack's 22.86 mm column, so the band is usable rack space — not a corner brace.</div>
+</header>
+<main>
+  <div id="stage">
+    <div id="tools">
+      <div class="row"><span class="t">View</span>
+        <button data-v="front">Front</button><button data-v="back">Back</button>
+        <button data-v="left">Left</button><button data-v="right">Right</button>
+        <button data-v="top">Top</button><button data-v="bottom">Bottom</button>
+        <button data-v="iso">Iso</button></div>
+      <div class="row"><span class="t">Section</span>
+        <button id="secpick" title="then click any face">Pick face</button>
+        <button data-ax="x">X</button><button data-ax="y">Y</button><button data-ax="z">Z</button>
+        <input id="secoff" type="range" min="-400" max="400" step="1" value="0" disabled>
+        <span id="secval">off</span>
+        <button id="secflip" disabled>Flip</button><button id="secoff_btn" disabled>Off</button></div>
+    </div>
+    <div id="hint">front of the rack faces you · U0 at the bottom</div>
+  </div>
+  <aside>
+    <h2>Rack <span id="tot" class="u"></span></h2>
+    <div id="layers"></div>
+    <div class="note"><b>Frame is all real Lab Rax STLs</b>, placed by their screw holes: each
+      Horizontal Edge end pad bridges a post insert and a Top Edge insert at 45°.
+      Every module is its real STL too (ATX PSU mount, mini-ITX shelf, keystone blank and hex
+      bottom panel copied from nobby's <code>D:\Downloads\08_3D_Printing\LabRax</code>).</div>
+    <div class="note" id="notes"></div>
+  </aside>
+</main>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from './vendor/STLLoader.js';
+import { OrbitControls } from './vendor/OrbitControls.js';
+
+const L = await (await fetch('out/LAYOUT.json?' + Date.now())).json();
+const U = L.U_mm;
+const LAYERS = [
+  { key: 'posts',   label: 'Lab Rax 5U posts ×12 (real)', files: ['frame_posts'],   color: 0x9b8cff, opacity: 1 },
+  { key: 'joiners', label: '1U extensions ×4 (real, full-depth side rails)', files: ['frame_joiners'], color: 0x6f7bff, opacity: 1 },
+  { key: 'frames',  label: 'Base + top frame: Top Edge ×4 + Horizontal Edge ×4 (real)', files: ['frames'], color: 0x3f4654, opacity: 1 },
+  { key: 'feet',    label: 'Feet ×4 (real)',                     files: ['feet'],         color: 0x4d5560, opacity: 1 },
+  { key: 'handles', label: 'Handles ×2 (real)',                  files: ['handles'],      color: 0xe69650, opacity: 1 },
+  { key: 'bottom',  label: 'Hex bottom panel + SmartiPi top panel (as printed)', files: ['bottom_panel'], color: 0x7d8694, opacity: 1 },
+  { key: 'sides',   label: 'Side panels ×2, labrax-hws honeycomb, bottom section (as printed)', files: ['side_panels'], color: 0x6e7684, opacity: 0.45 },
+];
+for (const m of L.modules) {
+  if (!m.files || !m.files.length) continue;
+  LAYERS.push({ key: m.key, label: `${m.label}${m.source === 'box' ? '  — placeholder' : ''}`,
+                files: m.files, color: parseInt(m.colour.slice(1), 16),
+                opacity: m.source === 'box' ? 0.5 : 1 });
+}
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.localClippingEnabled = true;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x10151c);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.15));
+const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(400, 700, 500); scene.add(sun);
+const camera = new THREE.PerspectiveCamera(35, 1, 1, 8000);
+const controls = new OrbitControls(camera, renderer.domElement);
+// model frame: x across, y depth (front = 0), z up  ->  three: y up, front toward +z
+const world = new THREE.Group(); world.rotation.x = -Math.PI / 2; scene.add(world);
+const grid = new THREE.GridHelper(700, 28, 0x2a3340, 0x1b222c); grid.position.set(0, -1, -120); scene.add(grid);
+
+const CUT = { value: 0 };
+const loader = new STLLoader();
+const groups = {};
+for (const Y of LAYERS) {
+  const g = new THREE.Group(); groups[Y.key] = g; world.add(g);
+  for (const f of Y.files) {
+    const geo = await new Promise(r => loader.load(`out/${f}.stl?${Date.now()}`, r));
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({ color: Y.color, roughness: 0.62, metalness: 0.05,
+      transparent: Y.opacity < 1, opacity: Y.opacity, side: THREE.DoubleSide, depthWrite: Y.opacity >= 1 });
+    mat.onBeforeCompile = sh => {
+      sh.uniforms.uCut = CUT;
+      sh.fragmentShader = 'uniform float uCut;\n' + sh.fragmentShader.replace('#include <dithering_fragment>',
+        '#include <dithering_fragment>\n  if (uCut > 0.5 && !gl_FrontFacing) gl_FragColor.rgb = vec3(0.93, 0.33, 0.25);');
+    };
+    g.add(new THREE.Mesh(geo, mat));
+  }
+}
+
+// U ruler up the left-hand side
+const ruler = new THREE.Group(); world.add(ruler); groups.ruler = ruler;
+const rmat = new THREE.LineBasicMaterial({ color: 0x3d4650 });
+for (let u = 0; u <= L.total_U; u++) {
+  const long = u % 5 === 0;
+  const p = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-150, 0, (L.z_floor_mm || 0) + u * U),
+    new THREE.Vector3(long ? -185 : -168, 0, (L.z_floor_mm || 0) + u * U)]);
+  ruler.add(new THREE.Line(p, rmat));
+}
+LAYERS.push({ key: 'ruler', label: `U ruler (0 – ${L.total_U})`, files: [], color: 0x3d4650, opacity: 1 });
+
+document.getElementById('tot').textContent =
+  `${L.total_U}U · ${L.used_U}U used · ${L.free_U}U free · ${(L.total_U * U).toFixed(0)} mm tall`;
+const lay = document.getElementById('layers');
+for (const Y of LAYERS) {
+  const id = 'cb_' + Y.key;
+  const m = L.modules.find(x => x.key === Y.key);
+  const u = m ? `<span class="u">U${m.U_from_bottom.toFixed(1)}–${(m.U_from_bottom + m.U_height).toFixed(1)}</span> ` : '';
+  lay.insertAdjacentHTML('beforeend', `<label><input type="checkbox" id="${id}" checked>
+    <span class="sw" style="background:#${Y.color.toString(16).padStart(6, '0')}"></span>${u}${Y.label}</label>`);
+  document.getElementById(id).onchange = e => groups[Y.key].visible = e.target.checked;
+}
+const sbc = L.modules.find(m => m.key === 'sbc');
+document.getElementById('notes').innerHTML =
+  `<b>SBC row:</b> 7 slots at ${sbc.slot_pitch_mm} mm pitch = ${sbc.row_width_mm} mm across a
+   ${L.clear_width} mm clear width. Left to right: ${(sbc.slots || []).map((s, i) => `${i + 1} ${s}`).join(' · ')}.`;
+
+function frame(dir = [-0.55, 0.42, 0.9], margin = 1.18) {
+  scene.updateMatrixWorld(true);          // Box3 reads world matrices; they are stale before a render
+  const box = new THREE.Box3();
+  for (const g of Object.values(groups)) if (g.visible) box.expandByObject(g);
+  if (box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
+  // fit the bounding sphere to whichever of height / width is tighter for this aspect ratio
+  const r = s.length() / 2;
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const d = Math.max(r / Math.sin(vFov / 2), r / Math.sin(Math.atan(Math.tan(vFov / 2) * camera.aspect)));
+  controls.target.copy(c);
+  camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(d * margin));
+  controls.update();
+}
+const VIEWS = { front: [0, 0, 1], back: [0, 0, -1], left: [-1, 0, 0], right: [1, 0, 0],
+                top: [0, 1, 1e-4], bottom: [0, -1, 1e-4], iso: [-0.55, 0.42, 0.9] };
+document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => frame(VIEWS[b.dataset.v], b.dataset.v === 'iso' ? 1.18 : 1.06));
+
+// ---- section plane (same tool as the GPU viewer) ----
+const secN = new THREE.Vector3(), secP = new THREE.Vector3();
+const plane = new THREE.Plane();
+let secOn = false, secSign = 1, picking = false;
+const helper = new THREE.PlaneHelper(plane, 600, 0x58a6ff); helper.visible = false; scene.add(helper);
+const off = document.getElementById('secoff'), val = document.getElementById('secval');
+const flipB = document.getElementById('secflip'), offB = document.getElementById('secoff_btn'), pickB = document.getElementById('secpick');
+function applySection() {
+  const d = +off.value;
+  const p = secP.clone().addScaledVector(secN, -d);
+  plane.setFromNormalAndCoplanarPoint(secN.clone().multiplyScalar(-secSign), p);
+  renderer.clippingPlanes = secOn ? [plane] : [];
+  CUT.value = secOn ? 1 : 0; helper.visible = secOn;
+  val.textContent = secOn ? `depth ${d.toFixed(0)} mm` : 'off';
+  [off, flipB, offB].forEach(e => e.disabled = !secOn);
+}
+function startSection(n, p) {
+  secN.copy(n).normalize(); secP.copy(p); secSign = 1; secOn = true;
+  off.value = 0; applySection();
+}
+off.oninput = applySection;
+flipB.onclick = () => { secSign = -secSign; applySection(); };
+offB.onclick = () => { secOn = false; applySection(); };
+pickB.onclick = () => { picking = !picking; pickB.classList.toggle('on', picking); stage.classList.toggle('picking', picking); };
+const AX = { x: [1, 0, 0], y: [0, 0, -1], z: [0, 1, 0] };
+document.querySelectorAll('[data-ax]').forEach(b => b.onclick = () => {
+  const box = new THREE.Box3(); for (const g of Object.values(groups)) if (g.visible) box.expandByObject(g);
+  startSection(new THREE.Vector3(...AX[b.dataset.ax]), box.getCenter(new THREE.Vector3()));
+});
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!picking || !down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const meshes = []; for (const g of Object.values(groups)) if (g.visible) g.traverse(o => o.isMesh && meshes.push(o));
+  const hit = ray.intersectObjects(meshes, false).find(h => !secOn || plane.distanceToPoint(h.point) >= 0);
+  if (!hit || !hit.face) return;
+  const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+  if (n.dot(ray.ray.direction) > 0) n.negate();
+  startSection(n, hit.point);
+  picking = false; pickB.classList.remove('on'); stage.classList.remove('picking');
+});
+
+function resize() { const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+frame();
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
+</script>
+</body>
+</html>

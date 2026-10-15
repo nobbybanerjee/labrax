@@ -1,0 +1,52 @@
+3U GPU FACEPLATE -- first test print (EVGA RTX 3090 Ti FTW3 Ultra, Lab Rax 10")
+File: PRINT_gpu_faceplate_3u_PETG_loose_ON_BED.stl  (253.0 x 131.7 x 12.6 mm, already laid flat:
+      back face on the bed, tab post up -- just import, do not rotate)
+      PRINT_gpu_faceplate_3u_PETG_loose.stl is the same part in rack coordinates (stands upright).
+
+REV 2 (2026-10-06, from test print 1):
+  - window: PCB-side edge moved 7.4 mm out (now 6 mm past the backplate top) so HDMI/DP plugs fit
+  - tab slot: 6 mm longer at the shroud end, width unchanged (the part you cut away by hand)
+  - tongue screw: solid pad where the honeycomb used to be, so a self-tapper from the BACK
+    can clamp the bracket's tongue end
+REV 3: no modelled holes in the tab post or the tongue pad -- both solid, self-tapping screws
+  driven where they land. No heat-set inserts needed any more.
+  Tab slot also 6 mm longer at the TOP end: now z 42.9 .. 99.0 above the plate bottom.
+  Window top edge pulled back to the bracket's PCB-side edge (z 89.0): no see-through sliver.
+  WARNING: that is 1.6 mm LOWER than test print 1 (90.6), where the real HDMI/DP plugs already
+  sat flush on the edge. Try a plug in every port before mounting; if they bind, say by how much.
+
+FIT = 0.4 mm extra clearance per side on every mating feature (gpu_shelf.py, FIT):
+  M6 rack slots      7.4 x 9.8 mm  (was 6.6 x 9.0)
+  bracket window     +0.4 all round (bracket still bears on a ~1.6 mm border)
+  tab slot           +0.4 each side, +0.4 top and bottom
+  tab screw post     moved 0.4 further from the tab; M3 heat-set bore 4.2 mm (was 4.0)
+  shelf-lip screws   M3 clearance 3.8 mm (was 3.4)
+  tongue relief      1.5 mm deep (was 1.0)
+  plate height       131.8 mm (3U minus 1.6) so it never binds on the units above/below
+
+PRINT (Neptune 4 Plus, PETG)
+  orientation   BACK face on the bed, tab post pointing UP. No supports.
+                (The tongue relief is a 1.5 mm pocket on the bed face; it just bridges.)
+  USE EXACTLY WHAT PRINTED THE 2U MINI ITX SHELF (Moonraker job 000046, 2026-09-30, completed,
+  read from its G-code on the printer):
+    print profile     0.20mm Standard @Elegoo N4Plus 0.4 nozzle
+    filament profile  Elegoo PETG PRO @EN4 Series - Copy
+    nozzle 250 C / bed 80 C (first layer too), layer 0.2, first layer 0.2
+    5 walls, 10 top / 4 bottom, 25 % cubic infill
+    first layer 20 mm/s, outer wall 160, inner 200, infill 200, max volumetric 8 mm3/s
+    part fan 10-40 %, off for the first 3 layers; aux fan 0
+    brim auto 5 mm, elephant-foot comp 0.1, seam aligned
+    SUPPORTS: OFF for this part (job 000046 had them on for the shelf)
+  Also from 2026-09-29: heat-soak the bed 10-15 min (start gcode has no soak / no
+  BED_MESH_PROFILE LOAD) and keep your manual SET_GCODE_OFFSET Z=-1.97.
+
+HARDWARE FOR THE TEST FIT
+  6x M6x10 button head + M6 nuts (Lab Rax bolted)   -- front posts
+  1x M3 brass heat-set insert (M3 x 4 x 5)          -- tab screw post
+  1x M3x6 button head                               -- through the card's tab into the insert
+
+WHAT TO CHECK, AND TELL ME THE NUMBERS
+  1. Hold it against the card's I/O bracket: HDMI + 3x DP fully visible, cables plug in?
+  2. The bent tab drops into the slot without forcing; the screw lines up with the insert?
+  3. The six M6 slots line up with the front post holes?
+  4. Any offset: measure it (calipers) and say which way -- I shift the model, not you.

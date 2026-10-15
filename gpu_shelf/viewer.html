@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>3090 Ti FTW3 — Lab Rax 3U GPU shelf</title>
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --line:#30363d; --fg:#c9d1d9;
+          --dim:#8b949e; --accent:#58a6ff; --warn:#f0883e; --bad:#f85149; --ok:#3fb950; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  header { padding:14px 18px 0; }
+  h1 { margin:0 0 2px; font-size:17px; font-weight:600; }
+  .sub { color:var(--dim); font-size:12.5px; margin-bottom:12px; }
+  nav { display:flex; gap:2px; padding:0 18px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  nav button { background:none; border:none; border-bottom:2px solid transparent; color:var(--dim);
+        padding:9px 14px; font:inherit; font-size:13px; cursor:pointer; }
+  nav button:hover { color:var(--fg); }
+  nav button.on { color:var(--accent); border-bottom-color:var(--accent); }
+  main { display:flex; gap:14px; padding:14px 18px 18px; align-items:flex-start; }
+  #stage { position:relative; flex:1 1 auto; height:74vh; min-height:420px; background:#10151c;
+        border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  #stage canvas { display:block; }
+  #hint { position:absolute; left:10px; bottom:8px; color:#5b6672; font-size:11.5px; pointer-events:none; }
+  aside { flex:0 0 330px; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:13px 14px; }
+  aside h2 { margin:0 0 9px; font-size:13px; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  td { padding:3px 0; vertical-align:top; }
+  td:first-child { color:var(--dim); padding-right:10px; }
+  td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+  .p { color:var(--ok); } .f { color:var(--bad); }
+  label { display:block; font-size:12.5px; color:var(--fg); margin:3px 0; cursor:pointer; }
+  .sw { display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 6px 0 2px; vertical-align:0; }
+  .note { margin-top:11px; padding-top:10px; border-top:1px solid var(--line); color:var(--dim); font-size:12px; }
+  .note b { color:var(--fg); font-weight:600; }
+  code { background:#0b0f14; border:1px solid var(--line); border-radius:4px; padding:0 4px; font-size:11.5px; }
+  #tools { position:absolute; left:10px; top:10px; display:flex; flex-direction:column; gap:6px; z-index:2; }
+  .row { display:flex; gap:4px; align-items:center; flex-wrap:wrap; background:rgba(13,17,23,.82);
+         border:1px solid var(--line); border-radius:6px; padding:4px 6px; }
+  .row span.t { color:var(--dim); font-size:11.5px; margin-right:2px; }
+  .row button { background:#21262d; border:1px solid var(--line); color:var(--fg); border-radius:4px;
+         padding:2px 8px; font:inherit; font-size:12px; cursor:pointer; }
+  .row button:hover { border-color:var(--accent); }
+  .row button.on { background:#1f3a5f; border-color:var(--accent); color:#fff; }
+  .row input[type=range] { width:200px; accent-color:var(--accent); }
+  #secval { color:var(--dim); font-size:11.5px; font-variant-numeric:tabular-nums; min-width:62px; }
+  #stage.picking canvas { cursor:crosshair; }
+</style>
+</head>
+<body>
+<header>
+  <h1>EVGA RTX 3090 Ti FTW3 Ultra — Lab Rax 3U GPU shelf</h1>
+  <div class="sub">Geometry straight from <code>print/*.stl</code>, the same files the slicer gets.
+    Posts are the real Lab Rax 3U post model. Drag to orbit, right-drag to pan, scroll to zoom.</div>
+</header>
+<nav id="tabs"></nav>
+<main>
+  <div id="stage">
+    <div id="tools">
+      <div class="row"><span class="t">View</span>
+        <button data-v="front">Front</button><button data-v="back">Back</button>
+        <button data-v="left">Left</button><button data-v="right">Right</button>
+        <button data-v="top">Top</button><button data-v="bottom">Bottom</button>
+        <button data-v="iso">Iso</button></div>
+      <div class="row"><span class="t">Section</span>
+        <button id="secpick" title="then click any face: the cut plane lies on that face">Pick face</button>
+        <button data-ax="x">X</button><button data-ax="y">Y</button><button data-ax="z">Z</button>
+        <input id="secoff" type="range" min="-300" max="300" step="0.5" value="0" disabled>
+        <span id="secval">off</span>
+        <button id="secflip" disabled>Flip</button><button id="secoff_btn" disabled>Off</button></div>
+    </div>
+    <div id="hint">front of the rack faces you · card fans down · 16-pin out the back</div></div>
+  <aside>
+    <h2>Layers</h2>
+    <div id="layers"></div>
+    <h2 style="margin-top:12px">Checks <span id="score" style="color:var(--dim);font-weight:400"></span></h2>
+    <table id="checks"></table>
+    <div class="note"><b>Print:</b> PETG or ASA, 4 walls, 25% gyroid. Shelf flat as modelled
+      (pillars, ears and riser wall stand up, no supports). Faceplate flat.</div>
+    <div class="note"><b>Hardware:</b> 12× M6×10 button head + nuts, 4× M3×8 + M3 heat-set inserts,
+      one 20 mm velcro strap.</div>
+    <div class="note"><b>Still open:</b> riser hole pattern (wall has M3 slots until it's bought) and a
+      tape-measure check of the I/O window against your bracket.</div>
+  </aside>
+</main>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from './vendor/STLLoader.js';
+import { OrbitControls } from './vendor/OrbitControls.js';
+
+const LAYERS = [
+  { key: 'shelf', label: 'GPU shelf (print)', files: ['gpu_shelf'], color: 0x6fa8ef, opacity: 1 },
+  { key: 'face', label: '3U faceplate (print)', files: ['gpu_faceplate_3u'], color: 0xe58c3c, opacity: 1 },
+  { key: 'real', label: '3090 Ti FTW3 — detailed (GrabCAD FTW3 → Ti)', files: ['_ref_card_3090ti'], color: 0x9aa2ae, opacity: 1 },
+  { key: 'ticad', label: 'Ti CAD — from photos + GrabCAD face (STEP)', files: ['ti_cad_shroud', 'ti_cad_lightbar', 'ti_cad_fans', 'ti_cad_fins', 'ti_cad_heatpipes', 'ti_cad_pcb', 'ti_cad_backplate', 'ti_cad_bracket', 'ti_cad_ports', 'ti_cad_16pin'], colors: [0x5a5d66, 0xd9dde3, 0x464950, 0xc3c7cd, 0xc07a52, 0x2f4a3a, 0x50535a, 0x6a6d75, 0xe0e0e4, 0x2a2a2a], opacity: 1 },
+  { key: 'grabcad', label: 'GrabCAD EVGA RTX 3090 FTW3 (original, non-Ti)', files: ['_ref_card_3090_grabcad'], color: 0xb7a98f, opacity: 1 },
+  { key: 'card', label: '4-slot clearance envelope', files: ['_ref_card'], color: 0x3a3d46, opacity: 0.35 },
+  { key: 'plug', label: '16-pin + cable bend', files: ['_ref_plug'], color: 0xe0412b, opacity: 0.8 },
+  { key: 'bracket', label: 'Bracket envelope (simplified)', files: ['_ref_bracket'], color: 0xc9ced6, opacity: 1 },
+  { key: 'ports', label: 'HDMI/DP cable zone (keep open)', files: ['_ref_ports'], color: 0x3fb950, opacity: 0.35 },
+  { key: 'posts', label: 'Lab Rax posts (real model)', files: ['_ref_post_FL', '_ref_post_FR', '_ref_post_RL', '_ref_post_RR'],
+    color: 0x9b8cff, opacity: 0.9 },
+];
+const TABS = [
+  { name: 'Assembly', show: ['shelf', 'face', 'real', 'plug', 'posts'] },
+  { name: 'Card', show: ['real', 'plug'], dir: [-0.75, 0.55, 0.55], zoom: 1.7 },
+  { name: 'Card (fans)', show: ['real'], dir: [-0.5, -0.75, 0.6], zoom: 1.7 },
+  { name: 'Ti CAD (from photos)', show: ['ticad'], dir: [-0.5, -0.75, 0.6], zoom: 1.7 },
+  { name: 'Ti CAD backplate', show: ['ticad'], dir: [-0.3, 0.6, 1.0], zoom: 1.7 },
+  { name: 'GrabCAD 3090 (original)', show: ['grabcad'], dir: [-0.5, -0.75, 0.6], zoom: 1.7 },
+  { name: 'GrabCAD vs Ti', show: ['grabcad', 'real'], dir: [-0.9, 0.2, 0.4], zoom: 1.6 },
+  { name: 'I/O bracket fit', show: ['face', 'real', 'ports'], dir: [0.35, 0.25, 1], zoom: 2.4 },
+  { name: 'Parts only', show: ['shelf', 'face'] },
+  { name: 'Shelf', show: ['shelf'] },
+  { name: 'Faceplate', show: ['face'] },
+  { name: 'Fit in rack', show: ['shelf', 'face', 'posts'] },
+];
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x10151c);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(300, 500, 400); scene.add(sun);
+const camera = new THREE.PerspectiveCamera(35, 1, 1, 5000);
+const controls = new OrbitControls(camera, renderer.domElement);
+// model frame: x across, y depth (front = 0), z up  ->  three: y up, front toward +z
+const world = new THREE.Group(); world.rotation.x = -Math.PI / 2; scene.add(world);
+const grid = new THREE.GridHelper(600, 24, 0x2a3340, 0x1b222c); grid.position.set(0, -0.5, -150); scene.add(grid);
+
+const loader = new STLLoader();
+const groups = {};
+const CUT = { value: 0 };          // shared uniform: 1 while a section plane is active
+for (const L of LAYERS) {
+  const g = new THREE.Group(); groups[L.key] = g; world.add(g);
+  for (const [i, f] of L.files.entries()) {
+    const col = L.colors ? L.colors[i] : L.color;
+    const geo = await new Promise(r => loader.load(`print/${f}.stl?${Date.now()}`, r));
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.6, metalness: 0.05,
+      transparent: L.opacity < 1, opacity: L.opacity, side: THREE.DoubleSide, depthWrite: L.opacity >= 1 });
+    // while sectioning, inside (back) faces show in a flat cut colour so cut material reads as solid
+    mat.onBeforeCompile = sh => {
+      sh.uniforms.uCut = CUT;
+      sh.fragmentShader = 'uniform float uCut;\n' + sh.fragmentShader.replace('#include <dithering_fragment>',
+        '#include <dithering_fragment>\n  if (uCut > 0.5 && !gl_FrontFacing) gl_FragColor.rgb = vec3(0.93, 0.33, 0.25);');
+    };
+    g.add(new THREE.Mesh(geo, mat));
+  }
+}
+const lay = document.getElementById('layers');
+for (const L of LAYERS) {
+  const id = 'cb_' + L.key;
+  lay.insertAdjacentHTML('beforeend', `<label><input type="checkbox" id="${id}" checked>
+    <span class="sw" style="background:#${(L.color ?? L.colors[0]).toString(16).padStart(6, '0')}"></span>${L.label}</label>`);
+  document.getElementById(id).onchange = e => groups[L.key].visible = e.target.checked;
+}
+function frame(dir = [-0.55, 0.45, 0.85], zoom = 2.1) {
+  const box = new THREE.Box3();
+  for (const g of Object.values(groups)) if (g.visible) box.expandByObject(g);
+  const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
+  controls.target.copy(c);
+  camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(s * zoom));
+  controls.update();
+}
+const nav = document.getElementById('tabs');
+TABS.forEach((T, i) => {
+  const b = document.createElement('button'); b.textContent = T.name;
+  b.onclick = () => {
+    [...nav.children].forEach(x => x.classList.remove('on')); b.classList.add('on');
+    for (const L of LAYERS) { const on = T.show.includes(L.key); groups[L.key].visible = on;
+      document.getElementById('cb_' + L.key).checked = on; }
+    frame(T.dir, T.zoom);
+  };
+  nav.appendChild(b); if (i === 0) setTimeout(() => b.click());
+});
+const R = await (await fetch('print/REPORT.json?' + Date.now())).json();
+const ok = R.checks.filter(c => c.pass).length;
+document.getElementById('score').textContent = `${ok}/${R.checks.length} pass`;
+document.getElementById('checks').innerHTML = R.checks.map(c =>
+  `<tr><td>${c.name}<br><span style="font-size:11px">${c.detail}</span></td>
+   <td class="${c.pass ? 'p' : 'f'}">${c.pass ? 'PASS' : 'FAIL'}</td></tr>`).join('');
+
+// ---- standard views (three frame: x right, y up, front of the rack toward +z) ----
+const VIEWS = { front: [0, 0, 1], back: [0, 0, -1], left: [-1, 0, 0], right: [1, 0, 0],
+                top: [0, 1, 1e-4], bottom: [0, -1, 1e-4], iso: [-0.55, 0.45, 0.85] };
+document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => frame(VIEWS[b.dataset.v], b.dataset.v === 'iso' ? 2.1 : 1.7));
+
+// ---- section plane: pick a face (or an axis), slide it, flip which side is kept ----
+const secN = new THREE.Vector3(), secP = new THREE.Vector3();
+const plane = new THREE.Plane();
+let secOn = false, secSign = 1, picking = false;
+const helper = new THREE.PlaneHelper(plane, 400, 0x58a6ff); helper.visible = false; scene.add(helper);
+const off = document.getElementById('secoff'), val = document.getElementById('secval');
+const flipB = document.getElementById('secflip'), offB = document.getElementById('secoff_btn'), pickB = document.getElementById('secpick');
+function sceneSize() { const b = new THREE.Box3(); for (const g of Object.values(groups)) if (g.visible) b.expandByObject(g);
+  return b.isEmpty() ? 300 : b.getSize(new THREE.Vector3()).length(); }
+function applySection() {
+  const d = +off.value;
+  // keep the material BEHIND the picked face; d = how deep the cut sits below that face (mm)
+  const p = secP.clone().addScaledVector(secN, -d);
+  plane.setFromNormalAndCoplanarPoint(secN.clone().multiplyScalar(-secSign), p);
+  renderer.clippingPlanes = secOn ? [plane] : [];
+  CUT.value = secOn ? 1 : 0; helper.visible = secOn;
+  val.textContent = secOn ? `depth ${d.toFixed(1)} mm` : 'off';
+  [off, flipB, offB].forEach(e => e.disabled = !secOn);
+}
+function startSection(n, p) {
+  secN.copy(n).normalize(); secP.copy(p); secSign = 1; secOn = true;
+  const r = Math.ceil(sceneSize() / 2); off.min = -r; off.max = r; off.value = 0; applySection();
+}
+off.oninput = applySection;
+flipB.onclick = () => { secSign = -secSign; applySection(); };
+offB.onclick = () => { secOn = false; applySection(); };
+pickB.onclick = () => { picking = !picking; pickB.classList.toggle('on', picking); stage.classList.toggle('picking', picking); };
+// axis sections through the middle of what is visible (model axes: X across, Y depth, Z up)
+const AX = { x: [1, 0, 0], y: [0, 0, -1], z: [0, 1, 0] };
+document.querySelectorAll('[data-ax]').forEach(b => b.onclick = () => {
+  const box = new THREE.Box3(); for (const g of Object.values(groups)) if (g.visible) box.expandByObject(g);
+  startSection(new THREE.Vector3(...AX[b.dataset.ax]), box.getCenter(new THREE.Vector3()));
+});
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!picking || !down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const meshes = []; for (const g of Object.values(groups)) if (g.visible) g.traverse(o => o.isMesh && meshes.push(o));
+  // ignore hits on material already cut away
+  const hit = ray.intersectObjects(meshes, false).find(h => !secOn || plane.distanceToPoint(h.point) >= 0);
+  if (!hit || !hit.face) return;
+  const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+  if (n.dot(ray.ray.direction) > 0) n.negate();           // face toward the camera
+  startSection(n, hit.point);
+  picking = false; pickB.classList.remove('on'); stage.classList.remove('picking');
+});
+
+function resize() { const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
+</script>
+</body>
+</html>
